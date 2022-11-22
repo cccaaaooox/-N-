@@ -2,6 +2,9 @@
 using namespace std;
 
 
+
+
+// 只处理堆上的内存
 template<typename T>
 class UniquePtr {
 private:
@@ -34,7 +37,13 @@ public:
     // 注意opertor bool没有返回值
     operator bool() {return ptr;}
 
-    // 实现父子类之间的继承关系
+    // 实现父子类之间的继承关系 UniquePtr<U> = UniquePtr<T>形似 Base* = Drived*
+    template<typename U>
+    UniquePtr(UniquePtr<U>&& other)
+    {
+        ptr = other.release();
+    }
+
     // 实现强制类型转化
 
     // 析构函数
@@ -51,15 +60,15 @@ public:
     T* release() 
     {
         T* tmp = ptr;
-        delete ptr;
         ptr = nullptr;
         return tmp;
     }
 private:
-    // 实现资源交换
-    void swap(UniquePtr&& up)
+    // 实现资源交换 - 参数是左值引用 
+    void swap(UniquePtr& up)
     {
-        std::swap(up.ptr, ptr);
+        using std::swap;
+        swap(up.ptr, ptr);
     }
 private:
     // 拷贝构造函数，赋值构造函数 - 禁止拷贝，拒绝多个对象管理同一个资源
